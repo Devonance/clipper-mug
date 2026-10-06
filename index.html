@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en" data-mode="eli5">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Europa Clipper Mug: A Map of the Spacecraft</title>
+<meta name="description" content="An unofficial interactive explainer of the Europa Clipper Geometry Reference Tool coffee mug: the real spacecraft, what each printed item is and does, and a 3D mug. ELI5 and Engineer modes.">
+<meta name="theme-color" content="#04060b">
+<meta property="og:title" content="Europa Clipper Mug: A Map of the Spacecraft">
+<meta property="og:description" content="Every label on a coffee mug that maps NASA's Europa Clipper, explained with animation. For curious people and for engineers.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="css/clipper.css">
+<link rel="modulepreload" href="js/stage.js">
+<script>document.documentElement.classList.add('js');try{var m=localStorage.getItem('cm-mode');if(m==='eng'||m==='eli5')document.documentElement.dataset.mode=m}catch(e){}</script>
+</head>
+<body>
+<canvas id="stage" aria-label="3D view of the Europa Clipper spacecraft. Drag to orbit, pinch or scroll to zoom."></canvas>
+<div id="labels"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<button class="dtab" id="tabL" title="Hide or show the text panel  [" aria-label="Hide the text panel" aria-expanded="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg><span>Text</span></button>
+<div class="tools" id="tools" aria-label="3D view controls">
+  <button data-tool="reset" title="Reset view (double-tap the scene)" aria-label="Reset view"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></button>
+  <button data-tool="in" title="Zoom in (pinch or scroll)" aria-label="Zoom in"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M11 8v6M8 11h6M20 20l-4-4"/></svg></button>
+  <button data-tool="out" title="Zoom out" aria-label="Zoom out"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M8 11h6M20 20l-4-4"/></svg></button>
+  <button data-tool="labels" class="on" title="Labels on or off" aria-label="Labels on or off"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg></button>
+  <button data-tool="ghost" title="Ghost mug around the spacecraft" aria-label="Ghost mug on or off"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6h11v9a4 4 0 0 1-4 4h-3a4 4 0 0 1-4-4z" stroke-dasharray="3 2.5"/><path d="M17 8h2a2 2 0 0 1 0 5h-2"/></svg></button>
+  <button data-tool="mug" title="Explore the mug" aria-label="Explore the mug"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h12v10a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4z"/><path d="M17 8h2a2 2 0 0 1 0 5h-2"/><path d="M9 9v5M13 9v5" opacity=".6"/></svg></button>
+  <button data-tool="full" title="Focus on the 3D view" aria-label="Focus on the 3D view"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+</div>
+
+<header class="topbar">
+  <button class="menubtn" id="menuBtn" aria-label="Open the menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg><b>Menu</b></button>
+  <a class="brand" href="#0"><span class="brand-mark" aria-hidden="true"></span><span>Clipper&nbsp;Mug</span></a>
+  <nav class="dots" id="dots" aria-label="Stations"></nav>
+  <button class="soundbtn" id="soundBtn" aria-label="Mute sound" aria-pressed="true"><span class="i-on"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg></span><span class="i-off"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 9l5 6M22 9l-5 6"/></svg></span><b>Sound on</b></button>
+  <button class="gbtn" id="glossBtn" aria-label="Open the glossary"><span aria-hidden="true">Aa</span><b>Glossary</b></button>
+  <div class="mode" id="mode" role="group" aria-label="Explanation level">
+    <button data-m="eli5" title="Plain words a 10-year-old follows">ELI5</button><button data-m="eng" title="Frames, numbers, units and sources">Engineer</button>
+  </div>
+</header>
+
+<main id="story" class="story">
+<div class="grip" id="grip" role="button" tabindex="0" aria-label="Drag or tap to resize the text panel"><span></span></div>
+
+<!-- 0 ── start ── -->
+<section class="step" id="s0" data-id="start" data-title="Start">
+  <p class="kicker">Europa Clipper · an unofficial explainer</p>
+  <h1>A mug that is a map</h1>
+  <div class="lay">
+<p class="lede">This is <span class="owner">Kevin</span>'s coffee mug. Printed on it is a map of a real spacecraft: NASA's <b>Europa Clipper</b>, which is flying to Jupiter right now to find out whether its icy moon Europa hides an ocean.</p>
+<p>The mug is not a model of the ship. It is a <b>map of its sides</b>. The bottom of the mug is the side that faces Europa. The open top is the side with the big radio dish. Going round the mug you pass one solar panel, the front, the other solar panel, and the handle.</p>
+<p>In the 3D view is the real spacecraft, built from published sizes, flying past Europa the way it will after it reaches Jupiter in 2030. Each station picks one thing printed on the mug and shows what that thing <em>does</em>.</p>
+  </div>
+  <div class="pro">
+<p class="lede">The print is titled "THE EUROPA CLIPPER GEOMETRY REFERENCE TOOL" and, under it, "STANDARD CLOSEST APPROACH (SCA) CONFIG". SCA is a real term: near 10,000 km from Europa the solar arrays rotate to a fixed position for the REASON radar, "known as the standard closest approach (SCA) configuration" <span class="src">[C25]</span>.</p>
+<p>The mug is an unrolled map of the spacecraft body frame. Its vertical axis is Y (+Y nadir at the base, −Y at the opening), its circumference runs +X → +Z → −X → −Z (handle) <span class="src">[print]</span>. The real body's long axis is Z (the launch-vehicle centreline) <span class="src">[FK]</span>, so treat the mug as a frame diagram, not a scale model.</p>
+<p>The 3D model uses the quick-facts bus envelope (3 m × 4.7 m × 4 m), a 30.5 m array span, a 3 m HGA, an 8.5 m magnetometer boom and the FK boresights <span class="src">[JPL][FK][Co25]</span>. Europa and Jupiter are not to scale (see station 01). The Europa flyby speed is unconfirmed; 4–5 km/s is supported <span class="src">[T24][K25]</span>.</p>
+  </div>
+  <div class="ctls" data-ctl="start"></div>
+  <div class="deeper"><p class="kicker sub">Go deeper</p>
+    <details class="deep"><summary>Why a mug?</summary><p>It is the kind of cheat-sheet an engineer who plans the spacecraft's moves would keep, printed on a mug so you can turn it in your hand the way the ship turns in space.</p><p class="pro dtech">Body-frame mnemonics matter because nearly every pointing rule is written in that frame: "+Y to nadir", "HGA on −Y", "+Z to ram at closest approach" <span class="src">[FK][M23][P24]</span>. The mug encodes those three rules in its shape.</p></details>
+    <details class="deep"><summary>How to use this site</summary><p>Drag the ship to spin it, pinch or scroll to zoom, tap any part for its name. Dotted words have definitions. The ELI5 / Engineer switch at the top changes every explanation.</p><p class="pro dtech">Engineer mode adds frames, numbers, units and source tags; tap a tag to open the sources list in station 12. The ☰ menu lists every station and the glossary.</p></details>
+  </div>
+</section>
+
+<!-- 1 ── frame ── -->
+<section class="step" id="s1" data-id="frame" data-title="The frame">
+  <p class="kicker">01 · The frame</p>
+  <h2>Which way is up</h2>
+  <div class="lay">
+<p class="lede">Spacecraft have no up or down, so engineers paint three arrows on the ship and name them X, Y and Z. Every instruction, like "point Y at the moon", uses those arrows.</p>
+<p>On Europa Clipper, <b>+Y</b> is the side that faces Europa during a flyby (that is the mug's bottom, with the down-arrow). <b>−Y</b> is the big dish side (the mug's open top). <b>+Z</b> is the way the ship is moving when it passes closest to Europa (the big yellow face). <b>+X</b> and <b>−X</b> run out along the two solar wings.</p>
+<p>Turn on the ghost mug and you can see the mug wrapped round the ship. One honest warning: the real ship is long along <b>Z</b>, like a tower, not along Y like a mug. The mug is a map of the sides, not a model.</p>
+  </div>
+  <div class="pro">
+<p class="lede">Frame EUROPAM_SPACECRAFT (ID −159000) <span class="src">[FK]</span>: the origin is "at the center of the circle of the Spacecraft to Launch Vehicle Separation Interface"; +Y "is pointed towards the direction of nadir pointed instruments"; +Z "is nominally parallel to the launch vehicle centerline"; +X "completes the right-handed frame, nominally parallel to the long axis of the solar arrays".</p>
+<p>At closest approach +Y is nadir and +Z is velocity (the FK diagrams label "+Ysc and Nadir @CA" and "+Zsc and Velocity @CA") <span class="src">[FK]</span>. The HGA and MGA point −Y <span class="src">[M23]</span>.</p>
+<p>The mug maps the frame onto a cylinder with Y as its axis. The yellow rectangle is the +Z face; its top edge is the gold line the print labels "−Y EDGE OF VAULT" (the vault's −Y face; that name is <i class="unc">unconfirmed</i> as an official feature). The pale discs on either side of the handle are one disc centred on −Z <span class="src">[print]</span>. The real stack is Propulsion Module then Avionics Module (the vault) along Z, with the nadir deck on +Y of the vault <span class="src">[S25][P24]</span>, so the physical long axis is Z, not Y.</p>
+  </div>
+  <div class="ctls" data-ctl="frame"></div>
+  <div class="deeper"><p class="kicker sub">Go deeper</p>
+    <details class="deep"><summary>Right-handed, and why it matters</summary><p>Point your right index finger along X and your middle finger along Y; your thumb is Z. Every spacecraft uses this rule so nobody ever argues about which way "+Z" is.</p><p class="pro dtech">X × Y = Z. The FK defines Y and Z from hardware (nadir instruments, LV centreline) and lets X "complete the right-handed frame", nominally along the arrays <span class="src">[FK]</span>.</p></details>
+    <details class="deep"><summary>What "nadir" and "ram" mean</summary><p>Nadir means "straight down at the moon". Ram means "the way we are moving", the direction that hits gas and dust head-on, like bugs on a windscreen.</p><p class="pro dtech">Before 40,000 km altitude the spacecraft "will twist around the nadir axis to put SUDA and MASPEX into the velocity direction" (the nadir-ram attitude) <span class="src">[C25]</span>; +Z is then the Kepler ram direction, within 2.5° for SUDA on ≥ 90 % of planned flybys <span class="src">[K25]</span>.</p></details>
+    <details class="deep"><summary>Why the ghost mug is not to scale</summary><p>If the mug were a true model, the solar wings would stretch ten mug-widths from tip to tip.</p><p class="pro dtech">Bus 3 m × 4.7 m × 4 m; deployed span 30.5 m; HF radar antennas 17.6 m <span class="src">[JPL]</span>. The ghost is scaled so its wall passes through the vault faces (Ø ≈ 6 m, height ≈ 5 m).</p></details>
+  </div>
+</section>
+
+<!-- 2 ── sca ── -->
+<section class="step" id="s2" data-id="sca" data-title="The flyby">
+  <p class="kicker">02 · The flyby</p>
+  <h2>Closest approach</h2>
+  <div class="lay">
+<p class="lede">Clipper does not orbit Europa. It orbits Jupiter and <b>swoops past Europa 49 times</b>, dipping as low as 25 km above the ice, then racing back out of Jupiter's radiation. Each swoop is a flyby, and the lowest point is called <b>closest approach</b>.</p>
+<p>A few hours before closest approach the ship turns its +Y side to face the moon and its +Z side forward. Then, about 10,000 km out, the two solar wings <b>turn to a fixed angle (−90°)</b> so the radar antennas on their edges look down at the ice. That pose is the "standard closest approach configuration" on the mug, SCA for short.</p>
+<p>Scrub the timeline to watch it happen. The ground rushes past at a few kilometres every second.</p>
+  </div>
+  <div class="pro">
+<p class="lede">The tour has 49 Europa flybys at typical closest-approach distances of 25–100 km, plus 7 Ganymede and 9 Callisto flybys <span class="src">[P24][JPL]</span>. Flybys rather than a Europa orbit let the spacecraft "quickly dip into the harsh radiation environment … and, just as quickly, escape" <span class="src">[C25]</span>.</p>
+<p>Sequence <span class="src">[C25]</span>: just before 40,000 km altitude the spacecraft twists about the nadir axis to put SUDA and MASPEX into the velocity direction; near 10,000 km the arrays actuate to the fixed SCA position "with the edge of the arrays on which the VHF and HF antennas are mounted pointed toward nadir" (array angle −90° <span class="src">[C25 Fig. 17]</span>); Sun tracking resumes during the turn to Earth-point about half a day after C/A.</p>
+<p>During the flyby the HGA points "upward and away from the moon, and not toward Earth" <span class="src">[JPL]</span>, so tracking uses the fan-beam and low-gain antennas (station 08). Ground-track speed is <i class="unc">unconfirmed</i>; EIS is designed for up to ∼4.5 km/s at 25 km altitude and SUDA expects impacts at 4–5 km/s <span class="src">[T24][K25]</span>. The altitude profile here is a schematic hyperbola, not a trajectory file.</p>
+  </div>
+  <div class="ctls" data-ctl="sca"></div>
+  <div class="deeper"><p class="kicker sub">Go deeper</p>
+    <details class="deep"><summary>Why everything looks at the same patch</summary><p>Pointing the cameras down and the "sniffers" forward at the same time means every instrument studies the same strip of ice at the same moment.</p><p class="pro dtech">"Nadir-pointing imaging and spectral instruments, in combination with a ram-pointing dust detector and neutral gas mass spectrometer, observe the same real estate" <span class="src">[K25]</span>; the attitude lets "all science instruments … operate and gather data simultaneously" <span class="src">[P24]</span>.</p></details>
+    <details class="deep"><summary>The radiation bill</summary><p>Jupiter is wrapped in invisible radiation that slowly cooks electronics. Clipper's brain lives in a metal box called the vault, and the mission is planned so the total dose stays under a limit.</p><p class="pro dtech">Tour design limit 3 Mrad total ionizing dose behind 100 mil of aluminium <span class="src">[P24]</span>; the planned tour reaches 2.97 Mrad by the last Europa flyby <span class="src">[C25]</span>. Vault walls: aluminium–zinc alloy up to 9.2 mm thick, bolted to the propulsion module <span class="src">[JPL]</span>. Dose per flyby: <i class="unc">unconfirmed</i>.</p></details>
+    <details class="deep"><summary>The road to Europa</summary><p>Launched 14 October 2024, Clipper borrowed speed from Mars in March 2025 and will borrow more from Earth in December 2026, arriving at Jupiter in April 2030.</p><p class="pro dtech">Launch 14 Oct 2024, 12:06 pm EDT, LC-39A, expendable Falcon Heavy <span class="src">[NASA][C25]</span>; arrays deployed the same day, magnetometer boom 5 Nov 2024 <span class="src">[Co25]</span>; Mars gravity assist 1 Mar 2025 at 884 km <span class="src">[JPL]</span>; Earth gravity assist Dec 2026 (pre-launch window 2–7 Dec; exact date and altitude <i class="unc">unconfirmed</i>) <span class="src">[JPL]</span>; JOI 11 Apr 2030; end of prime mission 23 Jun 2034; Ganymede impact 3 Sep 2034 <span class="src">[P24][C25]</span>. 2.9 billion km in 5½ years <span class="src">[JPL]</span>.</p></details>
+  </div>
+</section>
+
+<!-- 3 ── nadir ── -->
+<section class="step" id="s3" data-id="nadir" data-title="Nadir deck">
+  <p class="kicker">03 · Nadir deck</p>
+  <h2>Four eyes on the ice</h2>
+  <div class="lay">
+<p class="lede">The bottom of the mug says four instruments "FACE +Y (NADIR)". They are the ship's eyes, and they all look straight down at Europa; three of them sit on a shelf on the +Y side called the <b>nadir deck</b>.</p>
+<p><b>EIS</b> is two cameras: a zoom lens that can see things half a metre across, and a wide lens that sees a strip 44 km wide. <b>E-THEMIS</b> sees heat, so it can spot warm cracks where the ocean might be close to the surface. <b>UVS</b> sees ultraviolet light and can sniff thin gas above the ice. <b>MISE</b> splits light into colours to tell salt from ice, and it bolts to the vault itself rather than the shelf.</p>
+<p>Lower the altitude and watch the footprints shrink and sharpen. That is why Clipper dives so low.</p>
+  </div>
+  <div class="pro">
+<p class="lede">"The optical remote sensing instruments (Europa-UVS, EIS NAC, EIS WAC, MISE, and E-THEMIS) have their apertures along the spacecraft's +Y direction … all except MISE are co-located on the 'nadir deck'"; MISE "is attached directly to the vault" <span class="src">[P24]</span>. The deck is kinematically mounted to the vault for mechanical isolation <span class="src">[P24]</span>.</p>
+<p><b>EIS</b> <span class="src">[T24]</span>: NAC 2.3° × 1.2° FOV, 10 µrad IFOV → 0.5 m/pixel over a 2 km swath from 50 km; 2-axis gimbal ±30° cross- and along-track. WAC 48° × 24° FOV, 218 µrad IFOV → 11 m/pixel at the centre of a 44 km swath from 50 km. Both 8-megapixel (4k × 2k). <b>E-THEMIS</b> <span class="src">[Ch24]</span>: three bands, 7–14, 14–28 and 28–80 µm; sensor assembly on the nadir deck; built by Arizona State University. <b>Europa-UVS</b> <span class="src">[R24][P24]</span>: 55–206 nm; airglow port, high-spatial-resolution port and a solar port 40° off the main boresight; FOV offset ∼0.6° ahead of Y toward +Z; built at SwRI. <b>MISE</b> <span class="src">[Bl24]</span>: 0.8–5 µm at 10 nm resolution, 25 m/pixel at 100 km, 300 cross-track pixels (7.5 km swath at 100 km [D]), scan mirror.</p>
+<p>Footprints here scale linearly with altitude from the 50 km figures; E-THEMIS and UVS widths are schematic (the fact sheet gives no FOV for them).</p>
+  </div>
+  <div class="ctls" data-ctl="nadir"></div>
+  <div class="deeper"><p class="kicker sub">Go deeper</p>
+    <details class="deep"><summary>Why a deck, and why MISE is different</summary><p>Cameras must point exactly the same way as each other, so they share one stiff shelf that is mounted so the rest of the ship cannot bend it. MISE is different: it bolts straight to the vault.</p><p class="pro dtech">"the nadir deck, which is kinematically mounted to the vault for mechanical isolation" <span class="src">[P24]</span>; MISE is attached directly to the vault <span class="src">[P24]</span>.</p></details>
+    <details class="deep"><summary>How sharp is half a metre?</summary><p>From 50 km up, the zoom camera could tell a car from a van. Nobody has seen Europa that closely.</p><p class="pro dtech">NAC 10 µrad IFOV: 0.5 m pixels at 50 km range over a 2 km swath <span class="src">[T24]</span>; ground-track speeds up to ∼4.5 km/s drive the exposure design <span class="src">[T24]</span>.</p></details>
+  </div>
+</section>
+
+<!-- 4 ── ram ── -->
+<section class="step" id="s4" data-id="ram" data-title="Ram: MASPEX & SUDA">
+  <p class="kicker">04 · The +Z face</p>
+  <h2>Catching gas and dust</h2>
+  <div class="lay">
+<p class="lede">The big yellow face on the mug is the <b>front</b> of the ship at closest approach, the side that hits whatever is floating above Europa. Two instruments sit on it with their mouths open.</p>
+<p><b>MASPEX</b> swallows gas and weighs each molecule, so it can tell water from salt from the stuff of life. <b>SUDA</b> catches dust grains that have been knocked off the surface; each grain hits so hard it turns into a tiny puff of charged atoms, and SUDA reads what it was made of.</p>
+<p>Because they face forward and the cameras face down, the gas and dust they catch comes from the very ground the cameras are photographing.</p>
+  </div>
+  <div class="pro">
+<p class="lede">"MASPEX and SUDA are oriented along the spacecraft's +Z axis, which will be oriented in the ram direction (the direction of spacecraft motion) during flybys" <span class="src">[P24]</span>. The print places both on the +Z face at the −X edge; their exact X positions are <i class="unc">as the mug shows</i>.</p>
+<p><b>MASPEX</b> <span class="src">[W24][FK][NASA]</span>: a multi-bounce time-of-flight mass spectrometer (MBTOF), 1–500 m/z, resolving power above 25,000 (FWHM); the FK frame's +Z is "along the axis of the drift tube, pointing towards the inlet … nominally co-aligned with the spacecraft +Z axis"; built by SwRI. <b>SUDA</b> <span class="src">[K25][D]</span>: a time-of-flight, reflectron-type impact mass spectrometer; requirement "boresight ≤ 2.5° from Kepler Ram at C/A for at least 90 % of the planned flybys"; impacts at typical 4–5 km/s; the FK SUDA frame is rotated about +Z only, so its boresight is +Z.</p>
+<p>The particle stream here is illustrative; no density or plume model is claimed.</p>
+  </div>
+  <div class="ctls" data-ctl="ram"></div>
+  <div class="deeper"><p class="kicker sub">Go deeper</p>
+    <details class="deep"><summary>Why speed is the detector</summary><p>A dust grain hitting at four kilometres a second does not bounce; it vaporises into a flash of charged atoms. SUDA times those atoms as they drift to a sensor: heavy ones arrive late.</p><p class="pro dtech">Impact ionisation at 4–5 km/s feeds a reflectron TOF analyser <span class="src">[K25]</span>. MASPEX folds a long flight path into a multi-bounce tube to reach >25,000 resolving power <span class="src">[W24]</span>.</p></details>
+    <details class="deep"><summary>PIMS Upper, at the top of the yellow face</summary><p>Above the yellow face on the mug is PIMS UPPER, a plasma catcher that also has a forward-facing cup. It gets its own station (07).</p><p class="pro dtech">PIMS Upper carries RAM (+Z) and ANTI-NADIR (−Y) Faraday cups <span class="src">[FK]</span>; see station 07.</p></details>
+  </div>
+</section>
+
+<!-- 5 ── reason ── -->
+<section class="step" id="s5" data-id="reason" data-title="Arrays & REASON">
+  <p class="kicker">05 · The wings</p>
+  <h2>Wings that listen</h2>
+  <div class="lay">
+<p class="lede">The two purple lines on the mug are the solar wings, +X and −X. Spread out, they are as wide as a basketball court is long. At Jupiter the Sun is so faint that all that area makes only about 700 watts, what a coffee maker uses.</p>
+<p>Along the edge of each wing hang the antennas of <b>REASON</b>, a radar that can see through ice. The wings turn so those edges point at Europa, then the radar sends pings down into the ice and listens for echoes from the bottom of the ice shell, maybe from the ocean itself.</p>
+<p>Turn the wings, pick a frequency, and change the pretend ice thickness to see how the echo moves. The real thickness is one of the things Clipper is going to find out.</p>
+  </div>
+  <div class="pro">
+<p class="lede">Each array is five panels, about 14.2 m × 4.1 m; together 102 m², span 30.5 m <span class="src">[JPL]</span>; 700 W at end of mission <span class="src">[P24][NASA]</span>; built by APL and Airbus (Leiden) <span class="src">[NASA]</span>. Batteries: three lithium-ion, 365 Ah at end of mission <span class="src">[P24]</span>. The arrays are single-axis articulated (CK frames EUROPAM_SA+X, SA−X); at zero position the cells face −Y <span class="src">[FK]</span>. "PV SIDE" on the mug marks that cell face.</p>
+<p><b>REASON</b> <span class="src">[B24][NASA]</span>: dual-frequency ice-penetrating radar, 9 and 60 MHz. Antenna subsystem mounted on the solar arrays: two 17.6 m HF dipole assemblies and four 2.76 m VHF folded dipoles, designated +X (starboard) / −X (port) and inner / outer for VHF; the HF antennas unfold perpendicular to the arrays. In SCA "the solar arrays at −90°, which puts REASON antenna facing nadir" <span class="src">[C25]</span>; the cell side then faces ±Z, sign <i class="unc">unconfirmed</i>. The 3D model keeps the cells toward +Z.</p>
+<p>The cutaway and echo timing are a what-if (two-way time ≈ 2d·n/c with n ≈ 1.78 for ice, general physics, not a REASON result). REASON's first full test was during the Mars flyby of 1 Mar 2025 <span class="src">[JPL PIA26568]</span>.</p>
+  </div>
+  <div class="ctls" data-ctl="reason"></div>
+  <div class="deeper"><p class="kicker sub">Go deeper</p>
+    <details class="deep"><summary>Why two frequencies</summary><p>Low notes travel through ice further but see blurrier; high notes see finer detail near the top. Using both gives depth and detail.</p><p class="pro dtech">Dual-frequency ice-penetrating radar, 9 and 60 MHz <span class="src">[B24]</span>. The band roles are general radar practice, not quoted in the fact sheet: the lower frequency (HF) penetrates deeper, the higher (VHF) resolves finer; the mug's "REASON" bars sit at the +Y foot of each array line, matching the SCA geometry <span class="src">[C25]</span>.</p></details>
+    <details class="deep"><summary>Why the wings must turn</summary><p>The antennas are glued to the wings, so to point the radar down you have to turn the whole wing. The cells then face sideways for a few hours around closest approach.</p><p class="pro dtech">One-DOF array articulation <span class="src">[FK]</span>; SCA fixes the arrays at −90° so the antenna edge points nadir <span class="src">[C25]</span>. (The batteries, 365 Ah EOM <span class="src">[P24]</span>, are sized for such periods: our inference.)</p></details>
+  </div>
+</section>
+
+<!-- 6 ── ecm ── -->
+<section class="step" id="s6" data-id="ecm" data-title="Magnetometer (ECM)">
+  <p class="kicker">06 · The boom</p>
+  <h2>Feeling the ocean</h2>
+  <div class="lay">
+<p class="lede">The red arrow at the handle end of the mug points along a long pole, the magnetometer boom, which sticks out of the dish side of the ship. Along its outer part are three tiny compasses that feel magnetic fields.</p>
+<p>Jupiter has a huge magnetic field, and as the planet spins the field washes over Europa, changing direction every few hours. If there is salty water under the ice, that changing field makes electric currents in the water, and those currents make a field of their own. The compasses can feel that answer. No ocean, no answer.</p>
+<p>The pole keeps the compasses far from the ship's own electronics, which make small magnetic fields of their own.</p>
+  </div>
+  <div class="pro">
+<p class="lede">ECM (Europa Clipper Magnetometer, formerly ICEMAG) <span class="src">[FK]</span>: "three triaxial fluxgate magnetometers, FG1, FG2, and FG3, mounted on a 8.5-m long extendable boom at distances of 8.5-m, 6.8-m, and 5.2-m" <span class="src">[Co25]</span>; deployed 5 November 2024 <span class="src">[Co25]</span>. The boom is on the propulsion module <span class="src">[P24]</span>.</p>
+<p>Boom axis ≈ (0, −0.94, −0.34) in the body frame: along −Y, tilted 20° toward −Z <span class="src">[D, FK ECM mount/mast matrices]</span>, consistent with the mug's arrow pointing to −Y. In the Sun-pointed cruise attitude "the boom points directly at the Sun" <span class="src">[Co25]</span>.</p>
+<p>Science goal: "confirm that Europa's ocean exists, measure its depth and salinity, and measure the moon's ice shell thickness" <span class="src">[NASA]</span>; the boom reduces "obstructions and magnetic interference from the spacecraft" <span class="src">[NASA]</span>. The induction animation is a cartoon of the method (a conducting shell responding to a time-varying primary field), not a model of Europa's response; Jupiter's rotation period and field geometry are general background, not from the fact sheet.</p>
+  </div>
+  <div class="ctls" data-ctl="ecm"></div>
+  <div class="deeper"><p class="kicker sub">Go deeper</p>
+    <details class="deep"><summary>Three compasses, not one</summary><p>With three sensors at different distances the team can tell which part of the signal comes from the ship (it fades with distance) and which comes from space (it does not).</p><p class="pro dtech">Three sensors at 8.5, 6.8 and 5.2 m <span class="src">[Co25]</span>; using the fall-off with distance to separate the spacecraft's own field is standard magnetometer-boom practice (general).</p></details>
+    <details class="deep"><summary>PIMS helps the magnetometer</summary><p>Charged gas around Europa also bends magnetic fields. PIMS measures that gas so the team can subtract its effect and keep only the ocean's answer.</p><p class="pro dtech">"PIMS Faraday cups will distinguish those distortions from Europa's induced magnetic field" <span class="src">[NASA]</span>; see station 07.</p></details>
+  </div>
+</section>
+
+<!-- 7 ── pims ── -->
+<section class="step" id="s7" data-id="pims" data-title="PIMS">
+  <p class="kicker">07 · PIMS</p>
+  <h2>Four cups for plasma</h2>
+  <div class="lay">
+<p class="lede">Space near Jupiter is not empty. It is full of <b>plasma</b>, gas so hot that its atoms have lost electrons and carry electric charge. Plasma bends magnetic fields, so to read the ocean's magnetic answer (station 06) you must also measure the plasma.</p>
+<p>PIMS does that with four <b>Faraday cups</b>: metal cups that catch charged particles and measure the tiny electric current they make. Two cups sit on top of the ship (PIMS UPPER on the mug), facing forward and up. Two sit low on the fuel module, under the handle (PIMS LOWER IS BELOW HANDLE), facing down and backward.</p>
+<p>Drag the plasma direction around. Between them, the four cups look forward, back, down and up.</p>
+  </div>
+  <div class="pro">
+<p class="lede">"PIMS consists of two separated sensors (PIMS Upper and PIMS Lower), each with two orthogonally oriented Faraday cups of 90° FOV" <span class="src">[P24]</span>, four cups in all <span class="src">[Co23]</span>. FK cup frames: PIMS_UPPER → PIMS_RAM and PIMS_ANTI_NADIR; PIMS_LOWER → PIMS_ANTI_RAM and PIMS_NADIR <span class="src">[FK]</span>.</p>
+<p>So Upper looks +Z and −Y, Lower looks −Z and +Y. PIMS Lower is on the propulsion module <span class="src">[P24]</span>, which matches the mug: "PIMS LOWER IS BELOW HANDLE" (the handle is −Z) and the lower sensor sits toward +Y. "The positions of PIMS Upper and PIMS Lower permit combined view of plasma around the spacecraft with only minor obstructions" <span class="src">[P24]</span>.</p>
+<p>Purpose: "PIMS Faraday cups will distinguish those distortions from Europa's induced magnetic field" <span class="src">[NASA]</span>. The cup positions on the body (other than the module and the faces) are <i class="unc">as the mug shows</i>.</p>
+  </div>
+  <div class="ctls" data-ctl="pims"></div>
+  <div class="deeper"><p class="kicker sub">Go deeper</p>
+    <details class="deep"><summary>What a Faraday cup measures</summary><p>Charged particles fly into a metal cup and give it their charge. A meter counts how much charge arrives each second. That is a current, and it tells you how dense and how fast the plasma is.</p><p class="pro dtech">A collector behind a grid set measures ion/electron current versus retarding potential, giving density, velocity and temperature over a 90° FOV per cup <span class="src">[P24]</span>.</p></details>
+    <details class="deep"><summary>Why "upper" and "lower"</summary><p>Our best reading: on the launch pad the ship stands on its −Z end, so "upper" probably means nearer the top (+Z) and "lower" nearer the bottom (−Z). The mug's handle side is −Z, so lower is below the handle.</p><p class="pro dtech">Z is the launch-vehicle centreline <span class="src">[FK]</span>; the Avionics Module stacks on the Propulsion Module <span class="src">[S25]</span>; PIMS Lower is a propulsion-module item <span class="src">[P24]</span>.</p></details>
+  </div>
+</section>
+
+<!-- 8 ── comms ── -->
+<section class="step" id="s8" data-id="comms" data-title="Antennas & G&RS">
+  <p class="kicker">08 · The antennas</p>
+  <h2>Talking to Earth</h2>
+  <div class="lay">
+<p class="lede">The mug's open top is <b>−Y</b>, and that is where the big dish lives: a 3-metre <b>high-gain antenna</b> that sends pictures home. To use it the ship must turn the dish at Earth, which it does between flybys.</p>
+<p>During a flyby the dish faces away from Earth, because the cameras need +Y on Europa. So the ship talks through smaller antennas instead: three <b>fan-beam</b> antennas (FBA1, 2, 3) and three <b>low-gain</b> antennas (LGA1, 2, 3) that look in different directions. They cannot carry pictures, but they can carry a steady tone.</p>
+<p>That tone is science too. As Europa's gravity tugs the ship, the tone's pitch wobbles, and from the wobble the team measures the moon's gravity. The mug calls it <b>G&amp;RS</b>: gravity and radio science, done with the LGAs and FBAs.</p>
+  </div>
+  <div class="pro">
+<p class="lede">"The Europa Clipper spacecraft is designed with a fixed X/Ka-band High Gain Antenna (HGA) and X-band Medium Gain Antenna (MGA) pointed in the spacecraft −Y direction … typical tracking with the HGA will not be possible during Europa flybys" <span class="src">[M23]</span>. HGA: 3 m, X-band uplink, X and Ka downlink, up to 16 kb/s (X) and 500 kb/s (Ka) <span class="src">[P24][NASA]</span>. Calibrated X and Ka boresights are within hundredths of a degree of −Y <span class="src">[FK]</span>.</p>
+<p>Three X-band LGAs with symmetric beams are mounted in +Y, −Y and −Z <span class="src">[M23]</span>; they give all-sky coverage but are of limited use beyond the near-Earth environment <span class="src">[P24]</span>. Three X-band fan-beam antennas allow carrier-only Doppler tracking during Europa encounters; they lie in the Y/Z plane with the narrow beam axis along X <span class="src">[M23]</span>. Official FBA names: FBA−Y+Z (FBA1), FBA−Y−Z (FBA2), FBA+Y−Z (FBA3) <span class="src">[FK]</span>. LGA1/2/3 numbering is <i class="unc">unconfirmed</i>; the mug's groupings fit LGA1 = +Y, LGA2 = −Y, LGA3 = −Z (boresight 15° off −Z toward −Y [D]).</p>
+<p>G&amp;RS: the primary measurement is the tidal Love number k₂, "an independent diagnostic of the presence of a global subsurface ocean" <span class="src">[M23]</span>; two-way X-band Doppler from DSN 70 m stations in a ±2 h window around C/A <span class="src">[M23]</span>; usable antennas: 3 FBAs, 2 LGAs and the MGA <span class="src">[P24]</span>. So the mug's "G&amp;RS=LGAs+ FBAs+" holds, with the MGA as the "+". Seven smaller antennas in all <span class="src">[JPL][S25]</span>.</p>
+  </div>
+  <div class="ctls" data-ctl="comms"></div>
+  <div class="deeper"><p class="kicker sub">Go deeper</p>
+    <details class="deep"><summary>Why the dish doubles as a sunshade</summary><p>Near Earth the Sun is fierce, so the ship turns the dish toward the Sun and hides behind it like a parasol.</p><p class="pro dtech">"The highly isolated High Gain Antenna acts as a spacecraft sun shield during inner cruise including the Earth flyby" <span class="src">[S25]</span>; Sun-pointing the HGA is "not the spacecraft's normal orientation (only for inner cruise to manage heat)" <span class="src">[Co25]</span>, so −Y points at the Sun then [D].</p></details>
+    <details class="deep"><summary>Fan beams</summary><p>A fan beam is wide one way and thin the other, like light through a letterbox. Three of them, tilted differently, cover the directions Earth can be in during a flyby without any moving parts.</p><p class="pro dtech">FBAs in the Y/Z plane, narrow axis along X; boresights (0, −0.71, +0.71), (0, −0.71, −0.71), (0, +0.71, −0.71) [D] <span class="src">[M23][FK]</span>.</p></details>
+    <details class="deep"><summary>Earth's turn, December 2026</summary><p>In December 2026 Clipper swings past Earth to pick up speed, a few thousand kilometres up.</p><p class="pro dtech">Pre-launch window 2–7 Dec 2026 at about 3,100–3,450 km (1,951–2,144 mi) depending on launch date <span class="src">[JPL]</span>; the final date and altitude are <i class="unc">unconfirmed</i> by a NASA source.</p></details>
+  </div>
+</section>
+
+<!-- 9 ── attitude ── -->
+<section class="step" id="s9" data-id="attitude" data-title="Wheels & thrusters">
+  <p class="kicker">09 · Wheels &amp; thrusters</p>
+  <h2>Turning the ship</h2>
+  <div class="lay">
+<p class="lede">The pale discs on the mug, split by the handle, hold four purple ovals: <b>reaction wheels</b>. Spin a heavy wheel one way and the ship turns the other way, with no fuel at all. Four wheels in different tilts can turn the ship any way it likes; any three are enough.</p>
+<p>The four purple corners marked REM1 to REM4 are <b>rocket engine modules</b>, six small engines each. Sixteen point out of the −Z end to push the ship along; eight point up and down to roll it. Each engine pushes with about the weight of a 3-litre bottle of water, and up to eight fire together.</p>
+<p>Drag the pad to turn with the wheels. Hold the buttons to fire the engines.</p>
+  </div>
+  <div class="pro">
+<p class="lede"><b>RWA</b>: Honeywell HR18-250 reaction wheel assemblies on D-Strut isolators, "rotational flywheels mounted directly on the spacecraft in different orientations. The Europa Clipper spacecraft has four reaction wheels, requiring any set of three for nominal operations" <span class="src">[S25]</span>; "two-foot-wide steel, aluminum, and titanium wheels" <span class="src">[NASA]</span>; on the propulsion module <span class="src">[P24]</span>. Positions and numbering RWA1–4: <i class="unc">unconfirmed</i>, drawn as the mug shows (one disc centred on −Z).</p>
+<p><b>REM</b>: "four of these Rocket Engine Modules, each with six individual rocket engines. Each engine is capable of delivering 27.5 N of thrust" <span class="src">[S25]</span>. "Sixteen of these engines are pointed in the −Z direction, in two sets of eight for redundancy … eight more engines (two redundant sets of four) that point in the +Y and −Y directions … configured in coupled pairs and are used for roll control" <span class="src">[P24]</span>. Up to eight at a time for 220 N <span class="src">[JPL]</span>. Bipropellant: monomethylhydrazine with mixed oxides of nitrogen (3 %) <span class="src">[P24]</span>. Propellant load about 2,750 kg of a 5,800 kg launch mass <span class="src">[JPL]</span>. REM positions and numbering: <i class="unc">unconfirmed</i>, drawn as the mug shows.</p>
+<p>The wheel animation conserves angular momentum schematically (body rate ∝ −wheel rate); the "unload" button illustrates momentum unloading with thrusters in general, not a documented Clipper procedure.</p>
+  </div>
+  <div class="ctls" data-ctl="attitude"></div>
+  <div class="deeper"><p class="kicker sub">Go deeper</p>
+    <details class="deep"><summary>Why wheels fill up</summary><p>Every time outside pushes (sunlight, gravity) nudge the ship, the wheels spin a bit faster to cancel it. They cannot spin faster forever, so now and then the engines give a tiny push while the wheels slow down.</p><p class="pro dtech">Reaction wheels store angular momentum; external torques accumulate it until a thruster "desaturation" removes it. General spacecraft practice; Clipper's specific procedure is not in the fact sheet.</p></details>
+    <details class="deep"><summary>Which REM is which</summary><p>No public document says which corner is REM1. The numbers here are copied from the mug.</p><p class="pro dtech">Count (4 × 6 = 24 engines) and directions are sourced <span class="src">[S25][P24]</span>; the mug places REM4 (+X, −Y), REM1 (+X, +Y), REM3 (−X, −Y), REM2 (−X, +Y), all on the −Z (handle) side <span class="src">[print]</span>.</p></details>
+  </div>
+</section>
+
+<!-- 10 ── sensors ── -->
+<section class="step" id="s10" data-id="sensors" data-title="Star trackers & Sun sensors">
+  <p class="kicker">10 · Sensors</p>
+  <h2>Knowing which way you point</h2>
+  <div class="lay">
+<p class="lede">Before you can turn a ship you must know which way it is facing. The two blue barrels at the bottom of the mug, labelled <b>SRUs</b>, are star trackers: small cameras that photograph the stars and match them to a map, many times a second.</p>
+<p>The mug also says <b>DSS ON +Y</b>. A digital Sun sensor is a simpler helper that just reports where the Sun is. There is one on the +Y side and one on the −Y side, so the ship can find the Sun from either side.</p>
+<p>Press "Lose the stars" to see what happens when the moon blocks a tracker's view: the second one takes over.</p>
+  </div>
+  <div class="pro">
+<p class="lede"><b>SRU</b>: "Europa Clipper's two stellar reference units, informally called 'star trackers'" <span class="src">[NASA]</span>, a modified Sodern HYDRA <span class="src">[S25]</span>; first star images 4 Dec 2024 <span class="src">[NASA]</span>. FK frames ST1/ST2 in a "56/52 configuration", ST2 "rotated 199 deg about the ST2 boresight" to match the as-installed state <span class="src">[FK]</span>. Boresights ≈ (+0.51, −0.34, +0.79) and (−0.51, −0.34, +0.79): mostly +Z, 38° off +Z, 20° toward −Y, split ±X [D]. Mounting location: <i class="unc">unconfirmed</i>; drawn where the mug puts them (the +Y end under the +Z face).</p>
+<p><b>DSS</b>: "Digital sun sensors (procured from Adcole …) detect the position of the Sun relative to the spacecraft" <span class="src">[S25]</span>. Two heads, EUROPAM_DSS+Y and DSS−Y (after "ECR-9502 DSS Head Relocation") <span class="src">[FK]</span>; boresights DSS+Y ≈ (0, 0.99, −0.15), DSS−Y ≈ (0, −0.91, +0.42) [D]. The mug lists DSS both on +Y and in the −Y group with the MGA, matching the two heads.</p>
+<p>The "lose the stars" sequence is illustrative; the fact sheet contains no attitude-estimation details.</p>
+  </div>
+  <div class="ctls" data-ctl="sensors"></div>
+  <div class="deeper"><p class="kicker sub">Go deeper</p>
+    <details class="deep"><summary>Why star trackers look forward, not down</summary><p>Probably because Europa and Jupiter are big and bright, and a camera full of moon is useless for finding stars. The trackers point mostly along +Z, away from the moon below, and slightly toward the dish side.</p><p class="pro dtech">Boresights have a +0.79 Z component and −0.34 Y (anti-nadir) [D] <span class="src">[FK]</span>; the SRU field of view is not in the fact sheet, so why they point this way is our inference.</p></details>
+    <details class="deep"><summary>Two of everything</summary><p>Two trackers, two Sun sensors, four wheels when three would do, sixteen engines in two sets of eight. Spacecraft carry spares because nobody can fix them.</p><p class="pro dtech">Redundancy patterns cited: 2 SRUs <span class="src">[NASA]</span>, 2 DSS heads <span class="src">[FK]</span>, 4 RWAs with any 3 sufficient <span class="src">[S25]</span>, −Z engines in two sets of eight <span class="src">[P24]</span>.</p></details>
+  </div>
+</section>
+
+<!-- 11 ── rule ── -->
+<section class="step" id="s11" data-id="rule" data-title="The flight rule">
+  <p class="kicker">11 · The flight rule</p>
+  <h2>"DO NOT ROTATE MINUS-Y TO EARTH UNLESS EMPTY."</h2>
+  <div class="lay">
+<p class="lede">Real missions have <b>flight rules</b>: written safety rules that every command is checked against before it is sent. The mug carries one of its own.</p>
+<p>On the real ship, pointing −Y at Earth is the most normal thing it does: that is how the big dish sends data home. On a mug, −Y is the open top, and pointing it at Earth (down!) pours your coffee out. So the rule only applies "unless empty". Try it both ways.</p>
+<p>The rule number, 02026DD, is probably a wink at a small asteroid called 2026 DD that was spotted in February 2026. That is <span class="owner">Kevin</span>'s guess, not a fact.</p>
+  </div>
+  <div class="pro">
+<p class="lede">No public Europa Clipper flight-rule document was found, and "FR 02026DD" has no public match. Flight rules in JPL practice are "expressed in English prose, and the operations team enforces them daily either by manual review or via automated checkers"; "All commands sent to Mars are either simulated or checked by hand against a database of Flight Rules" <span class="src">[Maimone et al. 2018, RP-check]</span>. Pathfinder's rover rules were numbered by category with a rationale, affected commands, criticality and enforcement <span class="src">[PDS]</span>.</p>
+<p>The joke inverts a real fact: for the spacecraft, −Y (HGA and MGA) toward Earth is the routine Earth-point attitude for downlink <span class="src">[M23]</span>, and −Y toward the Sun is the inner-cruise sunshade attitude <span class="src">[S25][Co25]</span>. For the mug, −Y is the opening.</p>
+<p>"02026DD": JPL's Small-Body Database lists (2026 DD), an Apollo-class near-Earth asteroid, not a PHA, a = 2.29 au, e = 0.653, i = 25.4°, observed 2026-02-14 to 2026-02-27 <span class="src">[SBDB]</span>. That the rule number refers to it is <span class="owner">Kevin</span>'s reading and <i class="unc">unconfirmed</i>. "02026" could equally wink at the December 2026 Earth flyby; also <i class="unc">unconfirmed</i>.</p>
+  </div>
+  <div class="ctls" data-ctl="rule"></div>
+  <div class="deeper"><p class="kicker sub">Go deeper</p>
+    <details class="deep"><summary>What a flight rule looks like</summary><p>Rules like "never point the camera at the Sun" or "never fire the engines while the solar wings are turning" (made-up examples). Short, written down, checked before every command goes up.</p><p class="pro dtech">Each rule carries a rationale, the commands it affects, a criticality and an enforcement method <span class="src">[PDS Pathfinder rules]</span>; sequences are checked against the rule database before uplink <span class="src">[RP-check]</span>.</p></details>
+    <details class="deep"><summary>Why "unless empty" is also real-ish</summary><p>The real ship has a condition of its own: during a flyby the dish cannot face Earth, because +Y has to stay on the moon; it turns back to Earth about half a day after closest approach.</p><p class="pro dtech">Sun tracking and the turn to Earth-point resume about half a day after C/A <span class="src">[C25]</span>; during the encounter the HGA points away from Earth <span class="src">[JPL]</span>.</p></details>
+  </div>
+</section>
+
+<!-- 12 ── mug ── -->
+<section class="step" id="s12" data-id="mug" data-title="The mug">
+  <p class="kicker">12 · The mug</p>
+  <h2>The mug, the lid and the coaster</h2>
+  <div class="lay">
+<p class="lede">Here is the mug itself. Hover or tap anything printed on it to read what it is. Slide "Unroll" to flatten the print out, with its two ends meeting at the handle.</p>
+<p><b>LRR095050</b> on the mug is like a library card number for an internal document at JPL. It just says "there is a record with this number"; what is in it is not public, and this site does not guess.</p>
+<p>The QR code under <b>LID+COASTER</b> opens a free 3D-printable <b>lid and coaster</b> made by ddThingz. The lid has a raised six-spoke star over "−Y" on top. The coaster's underside is engraved with the +Y (nadir) face: the main radiator, MISE, E-THEMIS, EIS WAC, EIS NAC and UVS, as if you were Europa looking up at the ship.</p>
+<p class="note">The little grey speckled shape next to the QR code is on the print but has no label. We do not know what it is, so we show it as it is.</p>
+  </div>
+  <div class="pro">
+<p class="lede">Zazzle 15 oz white "basic_mug"; print area 8.5 in × 4.1 in; the design is cropped to 1.02 %–98.98 % vertically <span class="src">[BRIEF]</span>. The model here is a plain ceramic cylinder Ø 86 mm × 115 mm with a D-handle; the print wraps 287.7° of the circumference with its two edges meeting at the handle (§E).</p>
+<p><b>LRR095050</b>: LRR = Limited Release Record, a JPL internal record type; 095050 is the record number <span class="src">[<span class="owner">Kevin</span>]</span>. No public match exists and nothing about the record's contents is stated here. (This is not the other NASA "LRR", the Launch Readiness Review; Clipper's was scheduled for 13 Oct 2024 <span class="src">[NASA blog]</span>.)</p>
+<p><b>Lid + coaster</b>: thingiverse.com/thing:7387069, "Europa Clipper Mug Lid + Coaster" by ddThingz, CC BY-SA, 23 July 2026, file ecMugLid+Coaster.stl. Author's notes: print without rafts or supports on a very clean bed; pause after the first three layers to switch to a contrasting filament so the graphics show. The coaster underside is engraved mirrored, read from below: "MAIN RADIATOR", "+Y", "MISE", "ETHEMIS", "EIS WAC", "EIS NAC", "UVS", aperture outlines, an axis mark and arrows <span class="src">[BRIEF]</span>.</p>
+<p>The QR code on this page is regenerated from the URL at build time and verified to scan; the reference image's QR is partly covered by a watermark.</p>
+  </div>
+  <div class="ctls" data-ctl="mug"></div>
+  <div class="deeper"><p class="kicker sub">Go deeper</p>
+    <details class="deep"><summary>How the print was redrawn</summary><p>We traced every box, line and word from a photo of the print, measured where each one sits, and drew it again cleanly without the shop's watermark.</p><p class="pro dtech">Each element's bounding box was measured in the 2048 × 910 reference with OpenCV (§F); the SVG reproduces text, colour and position, and a region-by-region image diff against the reference is part of QA (§H).</p></details>
+    <details class="deep"><summary>What the lid's star means</summary><p>The lid's "−Y" says "this end is the top, the dish side". What the six-spoke star over it means, we do not know.</p><p class="pro dtech">The lid top carries a raised six-spoke symbol over a raised "−Y"; its underside reads "THE EUROPA CLIPPER GEOMETRY REFERENCE TOOL" <span class="src">[BRIEF, lid-coaster renders]</span>. Any further meaning of the symbol is <i class="unc">unconfirmed</i>.</p></details>
+  </div>
+<div class="credits" id="credits"></div>
+</section>
+
+</main>
+
+<div class="gloss" id="gloss" hidden role="dialog" aria-modal="true" aria-labelledby="glossH">
+  <div class="gpanel">
+    <div class="ghead"><h3 id="glossH">Glossary</h3><span class="dim">every term, in plain words</span><button class="gx-btn" id="glossX" aria-label="Close">✕</button></div>
+    <input id="glossQ" type="search" placeholder="Search: REASON, nadir, boresight…" aria-label="Search the glossary">
+    <div class="glist" id="glossList"></div>
+  </div>
+</div>
+
+<div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="mTitle">
+  <div class="mpanel"><div class="mhead"><h3 id="mTitle"></h3><button class="gx-btn" id="mClose" aria-label="Close">✕</button></div><div class="mbody" id="mBody"></div></div>
+</div>
+
+<div class="menu" id="menu" hidden>
+  <nav class="mdrawer" aria-label="Main menu">
+    <div class="mhead"><h3>Europa Clipper Mug</h3><button class="gx-btn" id="menuX" aria-label="Close menu">✕</button></div>
+    <p class="mlabel">Stations</p>
+    <ol class="mlist" id="mStations"></ol>
+    <p class="mlabel">Explore</p>
+    <ul class="mlist">
+      <li><button data-menu="mug"><span class="mt"><b>Explore the mug</b><small>The 3D mug, the lid and the coaster</small></span></button></li>
+      <li><button data-menu="glossary"><span class="mt"><b>Glossary</b><small>Every term in plain words</small></span></button></li>
+      <li><button data-menu="sources"><span class="mt"><b>Sources &amp; credits</b><small>Where every fact comes from</small></span></button></li>
+    </ul>
+    <p class="mlabel">Settings</p>
+    <div class="mset">
+      <div class="mrow"><span>Explanations</span><div class="seg small" id="setMode"><button data-m="eli5">ELI5</button><button data-m="eng">Engineer</button></div></div>
+      <div class="mrow"><span>Graphics</span><div class="seg small" id="setQ"><button data-q="auto">Auto</button><button data-q="high">High</button><button data-q="low">Battery saver</button></div></div>
+      <label class="tog"><input type="checkbox" id="setLabels" checked><span>Labels on the 3D view</span></label>
+      <label class="tog"><input type="checkbox" id="setMotion" checked><span>Gentle idle camera sway</span></label>
+      <p class="fine" id="musicLine">Music: Under The Jovian Sky, made by <span class="owner">Kevin</span> with Google Lyria.</p>
+    </div>
+    <p class="mlabel">How to use</p>
+    <ul class="mhelp">
+      <li><b>Rotate:</b> drag with one finger or the mouse.</li>
+      <li><b>Zoom:</b> pinch, scroll, or the + / − buttons.</li>
+      <li><b>Reset:</b> double-tap the view or press ⟲.</li>
+      <li><b>Learn a word:</b> tap any <span class="term-demo">dotted word</span> or any part in 3D.</li>
+      <li><b>Step:</b> the Next / ← buttons, the dots, or the arrow keys.</li>
+    </ul>
+  </nav>
+</div>
+
+<footer class="navbar">
+  <button class="nb" id="prev" aria-label="Previous station">←</button>
+  <span class="nb-t" id="stepName"></span>
+  <button class="nb next" id="next" aria-label="Next station">Next →</button>
+</footer>
+
+<noscript><style>.navbar,#stage{display:none}.lay,.pro{display:block!important}.js .step{display:block}</style></noscript>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
